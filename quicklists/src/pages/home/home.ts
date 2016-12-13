@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
-
 import { NavController, AlertController, Platform } from 'ionic-angular';
-
 import { ChecklistPage } from '../checklist/checklist';
 import { ChecklistModel } from '../../models/checklist-model';
 import { Data } from '../../providers/data';
 import { Keyboard } from 'ionic-native';
+import { Storage } from '@ionic/storage';
 
 @Component({
  selector: 'page-home',
@@ -15,12 +14,30 @@ export class HomePage {
 
  checklists: ChecklistModel[] = [];
 
- constructor(public nav: NavController, public dataService: Data, public alertCtrl: AlertController, public platform: Platform) {
+ constructor(public nav: NavController, public dataService: Data, public alertCtrl: AlertController, public storage: Storage, public platform: Platform) {
 
  }
 
  ionViewDidLoad(){
+  this.platform.ready().then(() => {
+    this.dataService.getData().then((checklists) => {
+      let savedChecklists: any = false;
 
+      if(typeof(checklists) != 'undefined'){
+        savedChecklists = JSON.parse(checklists);
+      }
+
+      if(savedChecklists){
+        savedChecklists.forEach((savedChecklist) => {
+          let loadChecklist = new ChecklistModel(savedChecklist.title, savedChecklist.items);
+          this.checklists.push(loadChecklist);
+
+          loadChecklist.checklist.subscribe(update => { this.save();
+          });
+        });
+      }
+    });
+  });
  }
 
  addChecklist(): void {
@@ -106,7 +123,8 @@ export class HomePage {
  }
 
  save(): void {
-
+   Keyboard.close();
+   this.dataService.save(this.checklists);
  }
 
 }
