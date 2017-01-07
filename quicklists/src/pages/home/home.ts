@@ -5,6 +5,7 @@ import { ChecklistModel } from '../../models/checklist-model';
 import { Data } from '../../providers/data';
 import { Keyboard } from 'ionic-native';
 import { Storage } from '@ionic/storage';
+import { IntroPage} from '../intro/intro';
 
 @Component({
  selector: 'page-home',
@@ -20,6 +21,14 @@ export class HomePage {
 
  ionViewDidLoad(){
   this.platform.ready().then(() => {
+
+    this.storage.get('introShown').then((result)=> {
+      if(!result) {
+        this.storage.set('introShown', true);
+        this.nav.setRoot(IntroPage);
+      }
+    });
+
     this.dataService.getData().then((checklists) => {
       let savedChecklists: any = false;
 
